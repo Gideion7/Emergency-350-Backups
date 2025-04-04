@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buildings</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+    <div class="form-container">
+        <h1>Buildings</h1>
+        <form action="{{ url_for('select_building') }}" method="post">
+            <label for="building">Select Building:</label>
+            <select id="building" name="building">
+                {% for building in buildings %}
+                <option value="{{ building[0] }}">{{ building[1] }}</option>
+                {% endfor %} 
+            </select>
+            <button type="submit">Select Building</button>
+        </form>
+    </div>
+</body>
+</html>
+
+
+
