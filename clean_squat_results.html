@@ -60,13 +60,22 @@
     
             <div class="field-row">
                 <label>Current Rating:</label>
-                <div id="rating">{{ row[3] }}</div>
+                <div id="avg_rating">{{ avg_rating }}</div>
             </div>
         {% endfor %}
     
-        <a href="/rating"><button type="button">Rate This Restroom</button></a>
-        <a href="/report_an_issue"><button type="button">Report an Issue</button></a>
-        <a href="/main"><button type="button">Done</button></a>
+        {% for row in result %}
+            <form action="{{ url_for('rating') }}" method="POST">
+                <!-- Hidden input to store the RestroomID -->
+                <input type="hidden" name="restroom_id" value="{{ row[4] }}"> <!-- Assuming row[4] is RestroomID -->
+                <button type="submit">Rate This Restroom</button>
+                <p>Restroom ID: {{ row[4] }}</p>
+            </form>
+            <a href="/report_an_issue"><button type="button">Report an Issue</button></a>
+            <a href="/main"><button type="button">Done</button></a>
+    {% else %}
+        <p>No matching results found.</p>
+    {% endfor %}
     
     <!-- {% else %}
         <p>No matching results found.</p>
