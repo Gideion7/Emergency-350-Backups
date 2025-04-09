@@ -139,6 +139,9 @@ def get_results():
     cursor.execute(query_avg, (selected_restroom_id,))
     avg_rating = cursor.fetchone()[0]
 
+    # Round average rating to 1 decimal place
+    avg_rating = round(avg_rating, 1)
+
     # Debug: Print average rating
     print("DEBUG: Average Rating Retrieved =", avg_rating)
 
@@ -360,40 +363,57 @@ def results():
 
 
 #This route renders the rating page, where users can rate the restrooms they visited. 
-@app.route("/rating", methods=["POST"])
+@app.route("/rating", methods=["GET", "POST"])
 @login_required
 def rating():
-    rating = request.form.get('rating')
-    #items = get_all_items() # Call defined function to get all items
-     # Get the building ID from session or elsewhere (ensure you have selected building)
+    if request.method == "POST":
+        rating_value = request.form.get('rating')
+        restroom_id = request.form.get('restroom_id')
+        user_id = session.get("user_id")
 
-    # If no rating is selected, return an error
-    if not rating:
-        flash("Please select a rating.", "error")
-        return redirect(url_for("rating"))
+        if not rating_value or not restroom_id:
+            flash("Missing rating or restroom info.")
+            return redirect(url_for("results"))
 
-    # Convert rating to an integer
-    rating = int(rating)
+        try:
+            rating_value = int(rating_value)
+            if rating_value < 1 or rating_value > 5:
+                flash("Rating must be between 1 and 5.")
+                return redirect(url_for("results"))
+        except ValueError:
+            flash("Invalid rating value.")
+            return redirect(url_for("results"))
 
-    # Update the rating in the database
-    conn = get_db_connection()
-    cursor = conn.cursor()
+        # Handle rating logic
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-     # Insert the rating into the RATING table
-    query = """
-    UPDATE RATING
-    SET Rating = %s
-    WHERE UserID = %s AND RestroomID = %s
-    """
-    cursor.execute(query, (rating, user_id, restroom_id))
-    conn.commit()
+        # Check if the user has already rated this restroom
+        cursor.execute("""SELECT RatingID FROM Clean_Squat.RATINGS 
+                          WHERE RestroomID = %s AND UserID = %s""", (restroom_id, user_id))
+        existing_rating = cursor.fetchone()
 
-    # Close connection
-    conn.close()
+        if existing_rating:
+            # Update existing rating
+            cursor.execute("""UPDATE Clean_Squat.RATINGS 
+                              SET Rating = %s, Timestamp = NOW() 
+                              WHERE RatingID = %s""", (rating_value, existing_rating[0]))
+            flash("Your rating has been updated.")
+        else:
+            # Insert new rating
+            cursor.execute("""INSERT INTO Clean_Squat.RATINGS 
+                              (Rating, UserID, RestroomID, Timestamp) 
+                              VALUES (%s, %s, %s, NOW())""", (rating_value, user_id, restroom_id))
+            flash("Thanks for rating!")
 
-    # Show confirmation message
-    flash("Thank you for your rating!", "success")
-    return redirect(url_for("rating"))
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("results"))
+
+    # Handle GET request to show the rating page
+    return render_template("rating.html")
+
 
 
 # This route renders the page that allows users to report issues with restrooms to staff. 
