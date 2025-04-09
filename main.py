@@ -371,6 +371,8 @@ def rating():
         restroom_id = request.form.get('restroom_id')
         user_id = session.get("user_id")
 
+        print(f"POST request received: rating_value={rating_value}, restroom_id={restroom_id}, user_id={user_id}")
+
         if not rating_value or not restroom_id:
             flash("Missing rating or restroom info.")
             return redirect(url_for("results"))
@@ -392,6 +394,9 @@ def rating():
         cursor.execute("""SELECT RatingID FROM Clean_Squat.RATINGS 
                           WHERE RestroomID = %s AND UserID = %s""", (restroom_id, user_id))
         existing_rating = cursor.fetchone()
+
+        # Debugging output for checking database query results
+        print(f"Existing rating check result: {existing_rating}")
 
         if existing_rating:
             # Update existing rating

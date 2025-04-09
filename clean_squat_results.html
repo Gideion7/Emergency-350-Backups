@@ -65,12 +65,7 @@
         {% endfor %}
     
         {% for row in result %}
-            <form action="{{ url_for('rating') }}" method="POST">
-                <!-- Hidden input to store the RestroomID -->
-                <input type="hidden" name="restroom_id" value="{{ row[4] }}"> <!-- Assuming row[4] is RestroomID -->
-                <button type="submit">Rate This Restroom</button>
-                <p>Restroom ID: {{ row[4] }}</p>
-            </form>
+            <a href="{{ url_for('rating', restroom_id=row[4]) }}"><button type="button">Rate This Restroom</button></a>
             <a href="/report_an_issue"><button type="button">Report an Issue</button></a>
             <a href="/main"><button type="button">Done</button></a>
     {% else %}
