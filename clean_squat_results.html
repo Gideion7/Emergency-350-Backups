@@ -39,10 +39,21 @@
 </head>
 <body>
     <div class="form-container">
-        <h1>Results</h1>
+
+        <!-- Flash Message Section -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="thanks-message">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+        {% endwith %}
 
         {% if result %}
         {% for row in result %}
+        <h1>Results</h1>
+
+        
             <div class="field-row">
                 <label>Building:</label>
                 <div id="building">{{ row[0] }}</div>
@@ -65,6 +76,7 @@
         {% endfor %}
     
         {% for row in result %}
+            <!--<p>Restroom ID: {{ row[4] }}</p>-->
             <a href="{{ url_for('rating', restroom_id=row[4]) }}"><button type="button">Rate This Restroom</button></a>
             <a href="/report_an_issue"><button type="button">Report an Issue</button></a>
             <a href="/main"><button type="button">Done</button></a>
@@ -154,4 +166,3 @@
     </div>
 </body>
 </html> -->
-

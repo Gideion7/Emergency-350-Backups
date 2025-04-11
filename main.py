@@ -93,6 +93,8 @@ def get_all_building_names_and_ids():
 #     return result
 
 def get_results():
+    
+    
     selected_building_id = session['selected_building_id']
     selected_type = session['selected_type']
     selected_gender = session['selected_gender']
@@ -356,6 +358,15 @@ def select_preferences():
 @app.route("/results", methods=["GET"])
 @login_required
 def results():
+    # Check if building and preferences are selected
+    if "selected_building_id" not in session:
+        flash("Please select a building before proceeding.")
+        return redirect(url_for("main"))  # Redirect to select building page
+
+    if "selected_type" not in session or "selected_gender" not in session:
+        flash("Please select your preferences before proceeding.")
+        return redirect(url_for("main"))  # Redirect to select preferences page
+    
     results, avg_ratings = get_results() # Call defined function to get all results
     if not results:
         return redirect(url_for('sorry'))
@@ -368,17 +379,19 @@ def results():
 def rating():
     if request.method == "POST":
         rating_value = request.form.get('rating')
-        restroom_id = request.form.get('restroom_id')
+        restroom_id =  session.get("selected_restroom_id") #request.form.get('restroom_id') 
         user_id = session.get("user_id")
 
         print(f"POST request received: rating_value={rating_value}, restroom_id={restroom_id}, user_id={user_id}")
 
-        if not rating_value or not restroom_id:
-            flash("Missing rating or restroom info.")
-            return redirect(url_for("results"))
+        # Only check if rating is missing
+        if not rating_value:
+            flash("Please select a rating before submitting.")
+            return redirect(url_for("rating"))  # Stay on the same page"))
 
         try:
             rating_value = int(rating_value)
+            restroom_id = int(restroom_id)
             if rating_value < 1 or rating_value > 5:
                 flash("Rating must be between 1 and 5.")
                 return redirect(url_for("results"))
@@ -391,25 +404,13 @@ def rating():
         cursor = conn.cursor()
 
         # Check if the user has already rated this restroom
-        cursor.execute("""SELECT RatingID FROM Clean_Squat.RATINGS 
-                          WHERE RestroomID = %s AND UserID = %s""", (restroom_id, user_id))
-        existing_rating = cursor.fetchone()
-
-        # Debugging output for checking database query results
-        print(f"Existing rating check result: {existing_rating}")
-
-        if existing_rating:
-            # Update existing rating
-            cursor.execute("""UPDATE Clean_Squat.RATINGS 
-                              SET Rating = %s, Timestamp = NOW() 
-                              WHERE RatingID = %s""", (rating_value, existing_rating[0]))
-            flash("Your rating has been updated.")
-        else:
-            # Insert new rating
-            cursor.execute("""INSERT INTO Clean_Squat.RATINGS 
-                              (Rating, UserID, RestroomID, Timestamp) 
-                              VALUES (%s, %s, %s, NOW())""", (rating_value, user_id, restroom_id))
-            flash("Thanks for rating!")
+         # Always update the rating or insert a new one
+        cursor.execute("""
+            INSERT INTO Clean_Squat.RATING (Rating, UserID, RestroomID) 
+            VALUES (%s, %s, %s) 
+            ON DUPLICATE KEY UPDATE Rating = VALUES(Rating)
+        """, (rating_value, user_id, restroom_id))
+        flash("Thanks for rating!")
 
         conn.commit()
         conn.close()
@@ -418,8 +419,6 @@ def rating():
 
     # Handle GET request to show the rating page
     return render_template("rating.html")
-
-
 
 # This route renders the page that allows users to report issues with restrooms to staff. 
 # @app.route("/report_an_issue", methods=["GET"])

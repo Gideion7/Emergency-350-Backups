@@ -1,0 +1,85 @@
+/* Center the stars and set the background to dark blue */
+body {
+  background-color: #002e5d; /* Dark blue background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column; /* Center content vertically */
+  height: 100vh; /* Full viewport height */
+  margin: 0;
+}
+
+.rating {
+  display: flex;
+  direction: rtl; /* Right to left layout for star display */
+  justify-content: center;
+}
+
+.rating input {
+  display: none;
+}
+
+.rating label {
+  font-size: 80px;
+  color: #6c6a6a;
+  cursor: pointer;
+  transition: color 0.4s ease-out;
+  display: inline-block;
+}
+
+.rating label:before {
+  content: '☆'; /* Unicode star character */
+  font-size: 100px;
+  transition: color 0.4s ease-out;
+}
+
+.rating input:checked + label:before,
+.rating input:checked ~ label:before {
+  content: '★'; /* Filled star character when selected */
+  color: #F9BF3B; /* Gold color for selected stars */
+  text-shadow: 0 0 20px #F9BF3B;
+}
+
+.rating label:hover,
+.rating input:checked ~ label:hover {
+  color: lighten(#444, 10%);
+  text-shadow: 0 0 15px lighten(#444, 10%);
+}
+
+#submitBtn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #F9BF3B;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  width: 200px; /* Set the width of the button */
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+#submitBtn:hover {
+  background-color: #e0a31a;
+}
+
+#ratingResult {
+  color: #F9BF3B; /* Set the text color to yellow */
+  font-size: 18px; /* Adjust the font size */
+  margin-top: 20px; /* Add some space between the button and result */
+  text-align: center; /* Center align the text */
+}
+
+/* Flash message styles */
+.flash-message {
+  background-color: #f44336; /* Red background for errors */
+  color: white; /* White text for the flash message */
+  padding: 15px;
+  border-radius: 5px;
+  font-size: 20px; /* Increase font size */
+  font-weight: bold; /* Make the text bold */
+  text-align: center; /* Center align the text */
+  width: 80%; /* Add width control to limit the message width */
+  margin: 20px auto; /* Center the flash message */
+}
